@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# MySQL Database configuration
 db_config = {
     'host': 'database-1.cne4ogysyg9x.eu-north-1.rds.amazonaws.com',
     'user': 'admin',
@@ -14,11 +13,9 @@ db_config = {
     'database': 'vetri_db'
 }
 
-# S3 configuration
 S3_BUCKET = 'vetri-devops-bucket'
 S3_REGION = 'eu-north-1'
 
-# Create a connection to S3
 s3 = boto3.client('s3', region_name=S3_REGION)
 
 @app.route('/')
@@ -34,13 +31,11 @@ def upload_file():
 
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-
+    
     filename = secure_filename(file.filename)
 
-    # Upload to S3
     s3.upload_fileobj(file, S3_BUCKET, filename)
 
-    # Insert record into RDS
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
