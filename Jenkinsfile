@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/VETRI9876/Product-Lifecycle-Management-System.git'
+                git branch: 'main', url: 'https://github.com/VETRI9876/Product-Lifecycle-Management-System.git'
             }
         }
 
