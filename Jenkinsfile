@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/your-username/my-flask-app.git'
+                git 'https://github.com/VETRI9876/Product-Lifecycle-Management-System.git'
             }
         }
 
