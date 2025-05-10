@@ -19,7 +19,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t my-flask-app .'
+                    bat 'docker build -t my-flask-app .'
                 }
             }
         }
@@ -27,8 +27,8 @@ pipeline {
         stage('Login to ECR') {
             steps {
                 script {
-                    sh '''
-                    $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI)
+                    bat '''
+                    for /f "tokens=*" %%i in ('aws ecr get-login-password --region %AWS_REGION%') do docker login --username AWS --password %%i %ECR_URI%
                     '''
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
         stage('Tag Docker Image') {
             steps {
                 script {
-                    sh "docker tag my-flask-app:$IMAGE_TAG $ECR_URI/$ECR_REPO:$IMAGE_TAG"
+                    bat "docker tag my-flask-app:%IMAGE_TAG% %ECR_URI%/%ECR_REPO%:%IMAGE_TAG%"
                 }
             }
         }
@@ -45,7 +45,7 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    sh "docker push $ECR_URI/$ECR_REPO:$IMAGE_TAG"
+                    bat "docker push %ECR_URI%/%ECR_REPO%:%IMAGE_TAG%"
                 }
             }
         }
@@ -53,9 +53,9 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 script {
-                    sh "aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME"
-                    sh "kubectl apply -f deployment.yaml"
-                    sh "kubectl apply -f service.yaml"
+                    bat "aws eks --region %AWS_REGION% update-kubeconfig --name %CLUSTER_NAME%"
+                    bat "kubectl apply -f deployment.yaml"
+                    bat "kubectl apply -f service.yaml"
                 }
             }
         }
@@ -63,7 +63,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 script {
-                    sh 'kubectl get svc vetri-flask-service -o jsonpath=\'{.status.loadBalancer.ingress[0].hostname}\''
+                    bat "kubectl get svc vetri-flask-service -o jsonpath=\"{.status.loadBalancer.ingress[0].hostname}\""
                 }
             }
         }
