@@ -34,8 +34,16 @@ def upload_file():
     
     filename = secure_filename(file.filename)
 
-    s3.upload_fileobj(file, S3_BUCKET, filename)
+    # Upload to S3
+    try:
+        s3.upload_fileobj(file, S3_BUCKET, filename)
+    except Exception as e:
+        print(f"S3 Upload Error: {e}")
+        return jsonify({'error': f"S3 Upload Error: {str(e)}"}), 500
 
+    # Insert into RDS
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
@@ -43,10 +51,13 @@ def upload_file():
         cursor.execute(query, (filename,))
         conn.commit()
     except mysql.connector.Error as err:
-        return jsonify({'error': str(err)}), 500
+        print(f"MySQL Error: {err}")
+        return jsonify({'error': f"MySQL Error: {str(err)}"}), 500
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
     return jsonify({'message': f'{filename} uploaded successfully to S3 and recorded in RDS'}), 200
 
